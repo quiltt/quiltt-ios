@@ -47,6 +47,7 @@
 		2F8C748B2B26661800E46284 /* ExampleSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExampleSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F8C748F2B26661800E46284 /* ExampleSwiftUIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSwiftUIUITests.swift; sourceTree = "<group>"; };
 		2F8C74912B26661800E46284 /* ExampleSwiftUIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSwiftUIUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		2FE2958F2B2902FF00DD7465 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +99,7 @@
 		2F8C74732B26661600E46284 /* ExampleSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				2FE2958F2B2902FF00DD7465 /* Info.plist */,
 				2F8C74742B26661600E46284 /* ExampleSwiftUIApp.swift */,
 				2F8C74762B26661600E46284 /* HomeView.swift */,
 				2F19AD582B2683AE00FF6075 /* ConnectorView.swift */,
@@ -437,6 +439,7 @@
 				DEVELOPMENT_TEAM = 85P229DUGJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExampleSwiftUI/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -466,6 +469,7 @@
 				DEVELOPMENT_TEAM = 85P229DUGJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExampleSwiftUI/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

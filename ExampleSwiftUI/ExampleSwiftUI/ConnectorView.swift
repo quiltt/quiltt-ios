@@ -19,7 +19,7 @@ struct WebView: UIViewRepresentable {
     @State var config = QuilttConnectorConnectConfiguration(
         connectorId: "mobile-sdk-sandbox",
 //        connectionId: "<CONNECTION_ID>", For reconnect
-        oauthRedirectUrl: "https://www.example.com"
+        oauthRedirectUrl: "https://tom-quiltt.github.io/expo-redirect/swift"
     )
 
     func makeUIView(context: Context) -> WKWebView {
