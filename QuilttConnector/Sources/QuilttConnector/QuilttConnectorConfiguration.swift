@@ -5,7 +5,7 @@ import Foundation
 
 public protocol QuilttConnectorConfiguration {
     var connectorId: String { get }
-    var oauthRedirectUrl: String { get } // TODO: check against URL format
+    var oauthRedirectUrl: String { get }
     var connectionId: String? { get }
 }
 

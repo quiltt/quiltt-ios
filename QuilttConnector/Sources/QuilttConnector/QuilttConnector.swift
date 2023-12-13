@@ -5,30 +5,44 @@ import Foundation
 import WebKit
 
 public class QuilttConnector {
+    private var webview: QuilttConnectorWebview?
     private var token: String?
     private var connectorId: String?
     private var connectionId: String?
     
     public init() {
         print("QuilttConnector init")
+        webview = QuilttConnectorWebview.init()
     }
     
     public func authenticate(token: String) {
         self.token = token
         print("authenticate token: \(self.token!)")
-        // TODO: figure out how to send js to webview here
-        // webview.injectJavascriptSomething
     }
     
-    public func connect(config: QuilttConnectorConnectConfiguration) -> WKWebView { // add callbacks
-        var webview = QuilttConnectorWebview.init()
-        webview.load(token: self.token, config: config)
-        return webview
+    public func connect(config: QuilttConnectorConnectConfiguration,
+                        onEvent: ConnectorSDKOnEventCallback? = nil,
+                        onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
+                        onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
+                        onExitError: ConnectorSDKOnExitErrorCallback? = nil) -> WKWebView {
+        webview!.load(token: self.token, config: config)
+        return webview!
     }
     
-    public func reconnect(config: QuilttConnectorReconnectConfiguration) -> WKWebView { // add callbacks
-        var webview = QuilttConnectorWebview.init()
-        webview.load(token: self.token, config: config)
-        return webview
+    public func reconnect(config: QuilttConnectorReconnectConfiguration,
+                          onEvent: ConnectorSDKOnEventCallback? = nil,
+                          onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
+                          onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
+                          onExitError: ConnectorSDKOnExitErrorCallback? = nil) -> WKWebView {
+        webview!.load(token: self.token, config: config)
+        return webview!
+    }
+
+    public func teardown() -> Void {
+        webview?.stopLoading()
+        webview?.removeFromSuperview()
+        webview?.navigationDelegate = nil
+        webview?.uiDelegate = nil
+        webview = nil
     }
 }

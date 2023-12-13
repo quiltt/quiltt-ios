@@ -14,7 +14,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         self.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         self.scrollView.isScrollEnabled = true
         self.isMultipleTouchEnabled = false
-        self.navigationDelegate = self // to manage navigation behavior for the web view.
+        self.navigationDelegate = self // to manage navigation behavior for the webview.
     }
 
     required init?(coder: NSCoder) {
@@ -22,7 +22,8 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     }
 
     @discardableResult
-    public func load(token: String? = nil, config: QuilttConnectorConfiguration) -> WKNavigation? {
+    public func load(token: String? = nil,
+                     config: QuilttConnectorConfiguration) -> WKNavigation? {
         self.token = token
         self.config = config
         if let url = URL(string:"https://\(config.connectorId).quiltt.app?mode=webview&oauth_redirect_url=\(config.oauthRedirectUrl)&sdk=swift") {
@@ -34,22 +35,32 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         return nil
     }
 
-    //https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455641-webview
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    /**
+     allowedListUrl & shouldRender ensure we are only rendering Quiltt, MX and Plaid content in Webview
+     For other urls, we assume those are bank urls, which needs to be handle in external browser.
+
+     https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455641-webview
+     */
+    public func webView(_ webView: WKWebView,
+                        decidePolicyFor navigationAction: WKNavigationAction,
+                        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        print("webview \(navigationAction)")
         if let url = navigationAction.request.url {
             // Intercept the URL here
             print("Intercepted URL: \(url)")
-            print("url.host \(url.host!)")
-            if isQuilttEvent(url: url) {
-                handleQuilttEvent(url: url)
+            print("isQuilttEvent \(isQuilttEvent(url))")
+            if isQuilttEvent(url) {
+                handleQuilttEvent(url)
                 decisionHandler(.cancel)
                 return
             }
-            if shouldRender(url: url) {
+            print("shouldRender \(shouldRender(url))")
+            if shouldRender(url) {
                 decisionHandler(.allow)
                 return
             }
-            decisionHandler(.allow)
+            handleOAuthUrl(url)
+            decisionHandler(.cancel)
             return
         } else {
             decisionHandler(.cancel)
@@ -57,11 +68,18 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         }
     }
     
-    private func initInjectedJavaScript() -> String {
-        var tokenString = token ?? "null"
-        var connectorId = config!.connectorId
-        var connectionId = config?.connectionId ?? "null"
-        var script = """
+//    TODO: FIXME, not sure how this func can fit into here
+    public func authenticate(_ token: String) -> Void {
+        self.token = token
+        self.initInjectJavaScript()
+    }
+
+    private func initInjectJavaScript() -> Void {
+        let tokenString = token ?? "null"
+
+        let connectorId = config!.connectorId
+        let connectionId = config?.connectionId ?? "null"
+        let script = """
             const options = {
               source: 'quiltt',
               type: 'Options',
@@ -77,23 +95,31 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             }, {});
             window.postMessage(compactedOptions);
         """
-        return script
+        print("initInjectJavaScript \(script)")
+        self.evaluateJavaScript(script)
     }
     
-    private func handleQuilttEvent(url: URL) {
+    private func clearLocalStorage() -> Void {
+        let script = "localStorage.clear()"
+        self.evaluateJavaScript(script)
+    }
+
+    private func handleQuilttEvent(_ url: URL) -> Void {
         switch url.host {
         case "Load":
-            var script = initInjectedJavaScript()
-            self.evaluateJavaScript(script)
+            initInjectJavaScript()
             print("handleQuilttEvent \(url.host!)")
             break
         case "ExitAbort":
+            clearLocalStorage()
             print("ExitAbort \(url)")
             break
         case "ExitError":
+            clearLocalStorage()
             print("ExitError \(url)")
             break
         case "ExitSuccess":
+            clearLocalStorage()
             print("ExitSuccess \(url)")
             break
         case "Authenticate":
@@ -101,10 +127,12 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             break
         case "OauthRequested":
             print("OauthRequested \(url)")
-            var urlc = URLComponents(string: url.absoluteString)
-            var oauthUrlString = urlc?.queryItems?.first?.value
-            var oauthUrl = URL(string: oauthUrlString!)!
-            handleOAuthUrl(oauthUrl: oauthUrl)
+            if let urlc = URLComponents(string: url.absoluteString),
+               let oauthUrlItem = urlc.queryItems?.first(where: { $0.name == "oauthUrl" }),
+               let oauthUrlString = oauthUrlItem.value,
+               let oauthUrl = URL(string: oauthUrlString) {
+                handleOAuthUrl(oauthUrl)
+            }
             break
         default:
             print("unhandled event \(url.absoluteString)")
@@ -118,17 +146,22 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         "cdn.plaid.com/link/v2/stable/link.html",
     ]
     
-    private func shouldRender(url: URL) -> Bool {
+    private func shouldRender(_ url: URL) -> Bool {
+        if isQuilttEvent(url) {
+            return false
+        }
         for allowedUrl in allowedListUrl {
-            if allowedUrl.contains(url.absoluteString) {
+            print("allowedUrl \(allowedUrl)")
+            print("url.absoluteString \(url.absoluteString)")
+            print("url.absoluteString.contains(allowedUrl) \(allowedUrl.contains(url.absoluteString))")
+            if url.absoluteString.contains(allowedUrl) {
                 return true
             }
         }
         return false
     }
     
-    private func handleOAuthUrl(oauthUrl: URL) {
-        print("handleOAuthUrl \(oauthUrl)")
+    private func handleOAuthUrl(_ oauthUrl: URL) {
         if (!oauthUrl.absoluteString.hasPrefix("https://")) {
             print("handleOAuthUrl - Skipping non https url - \(oauthUrl)")
             return
@@ -136,7 +169,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         UIApplication.shared.open(oauthUrl)
     }
     
-    private func isQuilttEvent(url: URL) -> Bool {
+    private func isQuilttEvent(_ url: URL) -> Bool {
         return url.absoluteString.hasPrefix("quilttconnector://")
     }
 }
