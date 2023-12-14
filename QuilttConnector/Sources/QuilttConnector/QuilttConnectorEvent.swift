@@ -2,9 +2,9 @@ import Foundation
 
 
 public struct ConnectorSDKCallbackMetadata {
-    let connectorId: String
-    let profileId: String?
-    let connectionId: String?
+    public let connectorId: String
+    public let profileId: String?
+    public let connectionId: String?
 }
 
 public typealias ConnectorSDKOnEventCallback = (ConnectorSDKEventType, ConnectorSDKCallbackMetadata) -> Void

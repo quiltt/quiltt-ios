@@ -3,35 +3,42 @@ import QuilttConnector
 import WebKit
 
 struct ConnectorView: View {
+    @Binding var showHomeView: Bool
+    @Binding var connectionId: String
     var body: some View {
-        WebView()
+        WebView(showHomeView: $showHomeView, connectionId: $connectionId)
     }
 }
 
 struct WebView: UIViewRepresentable {
+    @Binding var showHomeView: Bool
+    @Binding var connectionId: String
     @State var config = QuilttConnectorConnectConfiguration(
-        connectorId: "mobile-sdk-prod-test",
+        connectorId: "mobile-sdk-sandbox",
 //        connectionId: "<CONNECTION_ID>", For reconnect
         oauthRedirectUrl: "https://tom-quiltt.github.io/expo-redirect/swift"
     )
 
     func makeUIView(context: Context) -> WKWebView {
         let quilttConnector = QuilttConnector.init()
-        quilttConnector.authenticate(token: "eyJhbGciOiJIUzUxMiJ9.eyJuYmYiOjE3MDI0MTY4NDIsImlhdCI6MTcwMjQxNjg0MiwianRpIjoiMDgzYzlkNjgtYjA2ZC00NTNkLTlkYzEtZTQ0M2I0ZWM2Mzc5IiwiaXNzIjoiYXV0aC5xdWlsdHQuaW8iLCJhdWQiOiJhcGkucXVpbHR0LmlvIiwiZXhwIjoxNzAyNTAzMjQyLCJ2ZXIiOjQsInN1YiI6InBfMTJzajhSMzNoN250Q3RMcTZPUlZVUyIsImRpZCI6ImFwaV8xMnV0N3h2WGFHYjBTYk42eWtibXBWIiwib2lkIjoib3JnXzE3UjlwWUlXT3RhOWZpSUhMQ3ZEMXk1IiwiZWlkIjoiZW52XzE2ZGZrU1RzR3hRbjFZYUo4aDZTekxtIn0.zhhp5ndkV0YwqpMmI3DqB4--jAkUZAh02T2bvOFwHVDawqmRzP6Oivj38PtVjzrKQIaqdDZbGovhC9z91ygiSw")
+        quilttConnector.authenticate(token: "eyJhbGciOiJIUzUxMiJ9.eyJuYmYiOjE3MDI1MDc4MTUsImlhdCI6MTcwMjUwNzgxNSwianRpIjoiYzgxMmFhM2YtMTJjMy00NjlhLTliMjktMmQ1NmJkMzFjNWQxIiwiaXNzIjoiYXV0aC5xdWlsdHQuaW8iLCJhdWQiOiJhcGkucXVpbHR0LmlvIiwiZXhwIjoxNzAyNTk0MjE1LCJ2ZXIiOjQsInN1YiI6InBfMTY3SERMQXFuV05VSURIN0tVQXdyMVoiLCJkaWQiOiJhcGlfMTJ2NTdrTzJMOUpmMTBuTlJvOEY5MSIsIm9pZCI6Im9yZ18xN1I5cFlJV090YTlmaUlITEN2RDF5NSIsImVpZCI6ImVudl8xNUo2R1QydEl0bGE5cmhVTmZNVVVpMSJ9.0-6b3C4MjR2huBtIHVq2nFRMXg1T_ePXb_0FLOtXuF-sS-9v0ZttCHFF9kLwbLyIOU6A6xdcBNgQxQabsyelWw")
         let webview = quilttConnector.connect(config: config,
                                               onEvent: { eventType, metadata in
                                                 print("onEvent \(eventType), \(metadata)")
                                               },
                                               onExitSuccess: { metadata in
                                                 print("onExitSuccess \(metadata)")
+                                                connectionId = metadata.connectionId!
+                                                showHomeView = true
                                                 // TODO: Maybe use @Binding to show connection id to HomeView
                                               },
                                               onExitAbort: { metadata in
                                                 print("onExitAbort \(metadata)")
-                                                // TODO: Figure out how to navigate back to HomeView
+                                                showHomeView = true
                                               },
                                               onExitError: { metadata in
                                                 print("onExitError \(metadata)")
+                                                showHomeView = true
                                               })
         return webview
     }
@@ -42,5 +49,5 @@ struct WebView: UIViewRepresentable {
 }
 
 #Preview {
-    ConnectorView()
+    ConnectorView(showHomeView: .constant(false), connectionId: .constant("connectionId"))
 }

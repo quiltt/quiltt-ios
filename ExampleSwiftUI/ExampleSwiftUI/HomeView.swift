@@ -1,12 +1,15 @@
+import Foundation
 import SwiftUI
-import QuilttConnector
 
 struct HomeView: View {
-    @State var connectionId = "No Connection ID"
+    @Binding var showHomeView: Bool
+    @Binding var connectionId: String
     var body: some View {
         NavigationView {
             VStack {
-                NavigationLink(destination: ConnectorView().navigationBarBackButtonHidden(true)) {
+                Button(action: {
+                  showHomeView = false
+                }) {
                     Text("Launch Connector")
                 }
                 .padding()
@@ -14,6 +17,7 @@ struct HomeView: View {
                 .foregroundColor(.white)
                 .font(.headline)
                 .cornerRadius(10)
+                Text(connectionId)
             }
             .navigationTitle("Home View")
         }
@@ -21,5 +25,5 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(showHomeView: .constant(true), connectionId: .constant("connectionId"))
 }
