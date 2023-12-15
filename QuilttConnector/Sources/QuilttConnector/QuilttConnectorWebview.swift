@@ -18,6 +18,10 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         self.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         self.scrollView.isScrollEnabled = true
         self.isMultipleTouchEnabled = false
+        /** Enable isInspectable to debug webview */
+//        if #available(iOS 16.4, *) {
+//            self.isInspectable = true
+//        }
         self.navigationDelegate = self // to manage navigation behavior for the webview.
     }
 
@@ -39,9 +43,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         self.onExitAbort = onExitAbort
         self.onExitError = onExitError
         if let url = URL(string: "https://\(config.connectorId).quiltt.app?mode=webview&oauth_redirect_url=\(config.oauthRedirectUrl)&sdk=swift") {
-            print(url)
             let req = URLRequest(url: url)
-            print(req)
             return super.load(req)
         }
         return nil
@@ -56,17 +58,14 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     public func webView(_ webView: WKWebView,
                         decidePolicyFor navigationAction: WKNavigationAction,
                         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        print("webview \(navigationAction)")
         if let url = navigationAction.request.url {
             // Intercept the URL here
             print("Intercepted URL: \(url)")
-            print("isQuilttEvent \(isQuilttEvent(url))")
             if isQuilttEvent(url) {
                 handleQuilttEvent(url)
                 decisionHandler(.cancel)
                 return
             }
-            print("shouldRender \(shouldRender(url))")
             if shouldRender(url) {
                 decisionHandler(.allow)
                 return
@@ -107,7 +106,6 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             }, {});
             window.postMessage(compactedOptions);
         """
-        print("initInjectJavaScript \(script)")
         self.evaluateJavaScript(script)
     }
     
@@ -121,24 +119,21 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         let connectorId = config?.connectorId
         let profileId = urlComponents?.queryItems?.first(where: { $0.name == "profileId"})?.value
         let connectionId = urlComponents?.queryItems?.first(where: { $0.name == "connectionId"})?.value
+        print("handleQuilttEvent \(url)")
         switch url.host {
         case "Load":
             initInjectJavaScript()
-            print("handleQuilttEvent \(url.host!)")
             break
         case "ExitAbort":
             clearLocalStorage()
-            print("ExitAbort \(url)")
             self.onExitAbort?(ConnectorSDKCallbackMetadata(connectorId: connectorId!, profileId: nil, connectionId: nil))
             break
         case "ExitError":
             clearLocalStorage()
-            print("ExitError \(url)")
             self.onExitError?(ConnectorSDKCallbackMetadata(connectorId: connectorId!, profileId: nil, connectionId: nil))
             break
         case "ExitSuccess":
             clearLocalStorage()
-            print("ExitSuccess \(url)")
             if connectionId != nil {
                 self.onExitSuccess?(ConnectorSDKCallbackMetadata(connectorId: connectorId!, profileId: nil, connectionId: connectionId))
             }
@@ -148,7 +143,6 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             print("Authenticate \(String(describing: profileId))")
             break
         case "OauthRequested":
-            print("OauthRequested \(url)")
             if let urlc = URLComponents(string: url.absoluteString),
                let oauthUrlItem = urlc.queryItems?.first(where: { $0.name == "oauthUrl" }),
                let oauthUrlString = oauthUrlItem.value,
@@ -173,9 +167,6 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             return false
         }
         for allowedUrl in allowedListUrl {
-            print("allowedUrl \(allowedUrl)")
-            print("url.absoluteString \(url.absoluteString)")
-            print("url.absoluteString.contains(allowedUrl) \(allowedUrl.contains(url.absoluteString))")
             if url.absoluteString.contains(allowedUrl) {
                 return true
             }

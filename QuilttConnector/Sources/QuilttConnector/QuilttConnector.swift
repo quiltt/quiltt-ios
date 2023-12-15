@@ -11,13 +11,11 @@ public class QuilttConnector {
     private var connectionId: String?
     
     public init() {
-        print("QuilttConnector init")
         webview = QuilttConnectorWebview.init()
     }
     
     public func authenticate(token: String) {
         self.token = token
-        print("authenticate token: \(self.token!)")
     }
     
     public func connect(config: QuilttConnectorConnectConfiguration,
@@ -41,13 +39,5 @@ public class QuilttConnector {
                           onExitError: ConnectorSDKOnExitErrorCallback? = nil) -> WKWebView {
         webview!.load(token: self.token, config: config)
         return webview!
-    }
-
-    public func teardown() -> Void {
-        webview?.stopLoading()
-        webview?.removeFromSuperview()
-        webview?.navigationDelegate = nil
-        webview?.uiDelegate = nil
-        webview = nil
     }
 }

@@ -1,1 +1,2 @@
-# quiltt-connector-swift-sdk
+# Quiltt Connector Swift SDK
+
