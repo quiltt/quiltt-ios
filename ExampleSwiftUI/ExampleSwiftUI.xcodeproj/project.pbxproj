@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -229,7 +229,6 @@
 			);
 			mainGroup = 2F8C74682B26661600E46284;
 			packageReferences = (
-				2F8C749E2B26663800E46284 /* XCLocalSwiftPackageReference "../QuilttConnector" */,
 			);
 			productRefGroup = 2F8C74722B26661600E46284 /* Products */;
 			projectDirPath = "";
@@ -608,13 +607,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		2F8C749E2B26663800E46284 /* XCLocalSwiftPackageReference "../QuilttConnector" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../QuilttConnector;
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		2F8C749F2B26663800E46284 /* QuilttConnector */ = {
