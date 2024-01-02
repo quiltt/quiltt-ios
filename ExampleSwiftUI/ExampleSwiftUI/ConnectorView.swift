@@ -26,6 +26,9 @@ struct WebView: UIViewRepresentable {
                                               onEvent: { eventType, metadata in
                                                 print("onEvent \(eventType), \(metadata)")
                                               },
+                                              onExit: { eventType, metadata in
+                                                print("onExit \(eventType), \(metadata)")
+                                              },
                                               onExitSuccess: { metadata in
                                                 print("onExitSuccess \(metadata)")
                                                 connectionId = metadata.connectionId!
