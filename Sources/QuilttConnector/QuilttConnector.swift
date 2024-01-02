@@ -40,7 +40,13 @@ public class QuilttConnector {
                           onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
                           onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
                           onExitError: ConnectorSDKOnExitErrorCallback? = nil) -> WKWebView {
-        webview!.load(token: self.token, config: config)
+        webview!.load(token: self.token,
+                      config: config,
+                      onEvent: onEvent,
+                      onExit: onExit,
+                      onExitSuccess: onExitSuccess,
+                      onExitAbort: onExitAbort,
+                      onExitError: onExitError)
         return webview!
     }
 }
