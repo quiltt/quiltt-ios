@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -16,6 +16,7 @@
 		2F8C74902B26661800E46284 /* ExampleSwiftUIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8C748F2B26661800E46284 /* ExampleSwiftUIUITests.swift */; };
 		2F8C74922B26661800E46284 /* ExampleSwiftUIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8C74912B26661800E46284 /* ExampleSwiftUIUITestsLaunchTests.swift */; };
 		2F8C74A02B26663800E46284 /* QuilttConnector in Frameworks */ = {isa = PBXBuildFile; productRef = 2F8C749F2B26663800E46284 /* QuilttConnector */; };
+		2FBAC6A02B44B1E20074E464 /* QuilttConnector in Frameworks */ = {isa = PBXBuildFile; productRef = 2FBAC69F2B44B1E20074E464 /* QuilttConnector */; };
 		2FCC1F562B2B7E4B00F035DF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FCC1F552B2B7E4B00F035DF /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
@@ -58,6 +59,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2F8C74A02B26663800E46284 /* QuilttConnector in Frameworks */,
+				2FBAC6A02B44B1E20074E464 /* QuilttConnector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,6 +157,7 @@
 			name = ExampleSwiftUI;
 			packageProductDependencies = (
 				2F8C749F2B26663800E46284 /* QuilttConnector */,
+				2FBAC69F2B44B1E20074E464 /* QuilttConnector */,
 			);
 			productName = ExampleSwiftUI;
 			productReference = 2F8C74712B26661600E46284 /* ExampleSwiftUI.app */;
@@ -229,6 +232,7 @@
 			);
 			mainGroup = 2F8C74682B26661600E46284;
 			packageReferences = (
+				2FBAC69E2B44B1E10074E464 /* XCLocalSwiftPackageReference ".." */,
 			);
 			productRefGroup = 2F8C74722B26661600E46284 /* Products */;
 			projectDirPath = "";
@@ -608,8 +612,19 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		2FBAC69E2B44B1E10074E464 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		2F8C749F2B26663800E46284 /* QuilttConnector */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QuilttConnector;
+		};
+		2FBAC69F2B44B1E20074E464 /* QuilttConnector */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = QuilttConnector;
 		};
