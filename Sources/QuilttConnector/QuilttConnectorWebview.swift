@@ -16,7 +16,11 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     public init() {
         let webConfiguration = WKWebViewConfiguration()
         super.init(frame: .zero, configuration: webConfiguration)
-        self.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        if #available(iOS 14.0, *) {
+            self.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        } else {
+            self.configuration.preferences.javaScriptEnabled = true
+        }
         self.scrollView.isScrollEnabled = true
         self.isMultipleTouchEnabled = false
         /** Enable isInspectable to debug webview */
