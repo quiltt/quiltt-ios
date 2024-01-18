@@ -18,5 +18,6 @@ jobs:
       - name: Build Example App
         run: |
           xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace \
+            -allowProvisioningUpdates \
             -scheme ExampleSwiftUI \
             -sdk iphoneos build
