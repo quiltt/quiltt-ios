@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-13 # Weird that macos-latest doesn't have iOS 17
     strategy:
       matrix:
         ios: [17]
@@ -18,5 +18,6 @@ jobs:
       - name: Build Example App
         run: |
           xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace \
+            -allowProvisioningUpdates \
             -scheme ExampleSwiftUI \
             -sdk iphoneos build
