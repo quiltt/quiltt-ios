@@ -581,7 +581,7 @@
 				2F8C74942B26661800E46284 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		2F8C74952B26661800E46284 /* Build configuration list for PBXNativeTarget "ExampleSwiftUI" */ = {
 			isa = XCConfigurationList;
@@ -590,7 +590,7 @@
 				2F8C74972B26661800E46284 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		2F8C74982B26661800E46284 /* Build configuration list for PBXNativeTarget "ExampleSwiftUITests" */ = {
 			isa = XCConfigurationList;
@@ -599,7 +599,7 @@
 				2F8C749A2B26661800E46284 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		2F8C749B2B26661800E46284 /* Build configuration list for PBXNativeTarget "ExampleSwiftUIUITests" */ = {
 			isa = XCConfigurationList;
@@ -608,7 +608,7 @@
 				2F8C749D2B26661800E46284 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
