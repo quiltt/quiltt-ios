@@ -14,7 +14,7 @@ def release(level)
   new_version = current_version.increment!(level).to_s
 
   set_github_release(
-    repository_name: 'quiltt/quiltt-ios',
+    repository_name: REPO_NAME,
     api_token: GITHUB_TOKEN,
     name: new_version.to_s,
     tag_name: new_version.to_s,
