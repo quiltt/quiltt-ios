@@ -15,9 +15,10 @@ jobs:
           xcode-version: latest-stable
       - name: Check out code
         uses: actions/checkout@v4
+      - name: Install Fastlane
+        run: |
+          gem install bundler
+          bundle install
       - name: Build Example App
         run: |
-          xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace \
-            -allowProvisioningUpdates \
-            -scheme ExampleSwiftUI \
-            -sdk iphoneos build
+          bundle exec fastlane ios build_example_app
