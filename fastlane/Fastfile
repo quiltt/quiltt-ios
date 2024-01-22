@@ -1,3 +1,6 @@
+require 'octokit'
+require 'semantic'
+
 default_platform :ios
 
 REPO_NAME = 'quiltt/quiltt-ios'.freeze
