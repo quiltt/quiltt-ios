@@ -28,6 +28,8 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
 //            self.isInspectable = true
 //        }
         self.navigationDelegate = self // to manage navigation behavior for the webview.
+        // A hack to force Plaid to redirect flow over popup
+        self.customUserAgent = "Mozilla/5.0 (Linux; Android 14; sdk_gphone64_arm64 Build/UPB5.230623.003; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/113.0.5672.136 Mobile Safari/537.36"
     }
 
     required init?(coder: NSCoder) {
