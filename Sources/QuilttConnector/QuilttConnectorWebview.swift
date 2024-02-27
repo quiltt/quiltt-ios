@@ -51,7 +51,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         self.onExitSuccess = onExitSuccess
         self.onExitAbort = onExitAbort
         self.onExitError = onExitError
-        if let url = URL(string: "https://\(config.connectorId).quiltt.app?mode=webview&oauth_redirect_url=\(config.oauthRedirectUrl)&sdk=swift") {
+        if let url = URL(string: "https://\(config.connectorId).quiltt.app?mode=webview&oauth_redirect_url=\(config.oauthRedirectUrl)&agent=ios-\(quilttSdkVersion)") {
             let req = URLRequest(url: url)
             return super.load(req)
         }
