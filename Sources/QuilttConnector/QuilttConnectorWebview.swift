@@ -99,6 +99,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
 
         let connectorId = config!.connectorId
         let connectionId = config?.connectionId ?? "null"
+        let institution = config?.institution ?? "null"
         let script = """
             const options = {
               source: 'quiltt',
@@ -106,6 +107,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
               token: '\(tokenString)',
               connectorId: '\(connectorId)',
               connectionId: '\(connectionId)',
+              institution: '\(institution)',
             };
             const compactedOptions = Object.keys(options).reduce((acc, key) => {
               if (options[key] !== 'null') {
