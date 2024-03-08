@@ -18,7 +18,7 @@ public struct QuilttConnectorConnectConfiguration : QuilttConnectorConfiguration
     public init(
         connectorId: String,
         oauthRedirectUrl: String,
-        institution: String?
+        institution: String? = nil
     ){
         self.connectorId = connectorId
         self.oauthRedirectUrl = oauthRedirectUrl
@@ -35,7 +35,7 @@ public struct QuilttConnectorReconnectConfiguration: QuilttConnectorConfiguratio
     public init(
         connectorId: String,
         oauthRedirectUrl: String,
-        connectionId: String? = nil
+        connectionId: String
     ){
         self.connectorId = connectorId
         self.oauthRedirectUrl = oauthRedirectUrl
