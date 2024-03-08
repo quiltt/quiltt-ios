@@ -15,8 +15,8 @@ struct WebView: UIViewRepresentable {
     @Binding var connectionId: String
     @State var config = QuilttConnectorConnectConfiguration(
         connectorId: "<CONNECTOR_ID>",
-//        connectionId: "<CONNECTION_ID>", For reconnect
         oauthRedirectUrl: "<YOUR_HTTPS_UNIVERSAL_LINK>"
+//        institution: "<OPTIONAL_INSTITUTION_SEARCH_TERM_TO_PREFILL_INSTITUTION>"
     )
 
     func makeUIView(context: Context) -> WKWebView {
