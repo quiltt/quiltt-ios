@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require 'octokit'
 require 'semantic'
 
 default_platform :ios
 
-REPO_NAME = 'quiltt/quiltt-ios'.freeze
+REPO_NAME = 'quiltt/quiltt-ios'
 GITHUB_TOKEN = ENV['GITHUB_TOKEN']
 
 def bump_version_file(level)
@@ -42,7 +44,7 @@ platform :ios do
   desc 'Release patch version'
   lane :release_patch do
     new_version = bump_version_file(:patch)
-    build_example_app
+    # build_example_app
     # test_example_app
     release(new_version)
   end
