@@ -174,7 +174,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         "quiltt.app",
         "quiltt.dev",
         "moneydesktop.com",
-        "cdn.plaid.com/link/v2/stable/link.html",
+        "cdn.plaid.com",
     ]
     
     private func shouldRender(_ url: URL) -> Bool {
