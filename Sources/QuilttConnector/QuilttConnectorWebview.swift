@@ -24,9 +24,9 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         self.scrollView.isScrollEnabled = true
         self.isMultipleTouchEnabled = false
         /** Enable isInspectable to debug webview */
-//        if #available(iOS 16.4, *) {
-//            self.isInspectable = true
-//        }
+        //  if #available(iOS 16.4, *) {
+        //  self.isInspectable = true
+        //  }
         self.navigationDelegate = self // to manage navigation behavior for the webview.
     }
 
@@ -57,7 +57,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     }
 
     /**
-     allowedListUrl & shouldRender ensure we are only rendering Quiltt, MX and Plaid content in Webview
+     urlAllowList & shouldRender ensure we are only rendering Quiltt, MX and Plaid content in Webview
      For other urls, we assume those are bank urls, which needs to be handle in external browser.
 
      https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455641-webview
@@ -85,8 +85,8 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             return
         }
     }
-    
-//    TODO: FIXME, not sure how this func can fit into here
+
+    // TODO: FIXME, not sure how this func can fit into here
     public func authenticate(_ token: String) -> Void {
         self.token = token
         self.initInjectJavaScript()
@@ -170,23 +170,24 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         }
     }
     
-    private var allowedListUrl = [
-        "quiltt.app",
-        "quiltt.dev",
-        "moneydesktop.com",
-        "cdn.plaid.com",
-    ]
+    // TODO: Need to regroup on this and figure out how to handle this better
+    // private var urlAllowList = [
+    //     "quiltt.app",
+    //     "quiltt.dev",
+    //     "moneydesktop.com",
+    //     "cdn.plaid.com",
+    // ]
     
     private func shouldRender(_ url: URL) -> Bool {
         if isQuilttEvent(url) {
             return false
         }
-        for allowedUrl in allowedListUrl {
-            if url.absoluteString.contains(allowedUrl) {
-                return true
-            }
-        }
-        return false
+        // for allowedUrl in urlAllowList {
+        //     if url.absoluteString.contains(allowedUrl) {
+        //         return true
+        //     }
+        // }
+        return true
     }
     
     private func handleOAuthUrl(_ oauthUrl: URL) {
