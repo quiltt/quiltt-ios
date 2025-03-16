@@ -1,0 +1,38 @@
+name: CI
+
+on: push
+
+jobs:
+  build:
+    name: CI
+    runs-on: macos-14 # Specify a fixed macOS version (macOS Sonoma)
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2' # Lock to a specific Xcode version
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.0
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Build Swift Package
+        run: swift build
+
+      - name: Run Tests
+        run: swift test
+
+      - name: List available simulators
+        run: xcrun simctl list devices available
+
+      - name: Build Example App
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        run: bundle exec fastlane ios build_example_app

@@ -1,8 +1,13 @@
 // swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+@preconcurrency
 import Foundation
 import WebKit
+
+#if canImport(UIKit)
+import UIKit
+#endif
 
 class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     public var config: QuilttConnectorConfiguration?
@@ -16,13 +21,20 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     public init() {
         let webConfiguration = WKWebViewConfiguration()
         super.init(frame: .zero, configuration: webConfiguration)
-        if #available(iOS 14.0, *) {
+        
+        // Configure JavaScript based on iOS version
+        if #available(iOS 14.0, macOS 11.0, *) {
             self.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         } else {
             self.configuration.preferences.javaScriptEnabled = true
         }
-        self.scrollView.isScrollEnabled = true
+        
+        // Skip scrollView setup during testing/macOS
+        #if os(iOS)
+        // Explicitly access WKWebView's scrollView property
+        (self as WKWebView).scrollView.isScrollEnabled = true
         self.isMultipleTouchEnabled = false
+        #endif
         /** Enable isInspectable to debug webview */
         //  if #available(iOS 16.4, *) {
         //  self.isInspectable = true
@@ -49,7 +61,33 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         self.onExitSuccess = onExitSuccess
         self.onExitAbort = onExitAbort
         self.onExitError = onExitError
-        if let url = URL(string: "https://\(config.connectorId).quiltt.app?mode=webview&oauth_redirect_url=\(config.oauthRedirectUrl)&agent=ios-\(quilttSdkVersion)") {
+        
+        // Apply smart URL encoding to the redirect URL
+        let safeOAuthRedirectUrl = URLUtils.smartEncodeURIComponent(config.oauthRedirectUrl)
+        
+        // Build the URL components
+        var urlComponents = URLComponents()
+        urlComponents.scheme = "https"
+        urlComponents.host = "\(config.connectorId).quiltt.app"
+        
+        // Create query items
+        var queryItems = [
+            URLQueryItem(name: "mode", value: "webview"),
+            URLQueryItem(name: "agent", value: "ios-\(quilttSdkVersion)")
+        ]
+        
+        // Handle the OAuth redirect URL with special care
+        if URLUtils.isEncoded(safeOAuthRedirectUrl) {
+            // If already encoded, decode once to prevent double encoding
+            let decodedOnce = safeOAuthRedirectUrl.removingPercentEncoding ?? safeOAuthRedirectUrl
+            queryItems.append(URLQueryItem(name: "oauth_redirect_url", value: decodedOnce))
+        } else {
+            queryItems.append(URLQueryItem(name: "oauth_redirect_url", value: safeOAuthRedirectUrl))
+        }
+        
+        urlComponents.queryItems = queryItems
+        
+        if let url = urlComponents.url {
             let req = URLRequest(url: url)
             return super.load(req)
         }
@@ -160,9 +198,23 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         case "OauthRequested":
             if let urlc = URLComponents(string: url.absoluteString),
                let oauthUrlItem = urlc.queryItems?.first(where: { $0.name == "oauthUrl" }),
-               let oauthUrlString = oauthUrlItem.value,
-               let oauthUrl = URL(string: oauthUrlString) {
-                handleOAuthUrl(oauthUrl)
+               let oauthUrlString = oauthUrlItem.value {
+                
+                // Handle potential encoding issues
+                if URLUtils.isEncoded(oauthUrlString) {
+                    let decodedUrl = oauthUrlString.removingPercentEncoding ?? oauthUrlString
+                    if let oauthUrl = URL(string: decodedUrl) {
+                        handleOAuthUrl(oauthUrl)
+                    } else {
+                        print("Failed to create URL from decoded string: \(decodedUrl)")
+                        // Fallback to original string
+                        if let oauthUrl = URL(string: oauthUrlString) {
+                            handleOAuthUrl(oauthUrl)
+                        }
+                    }
+                } else if let oauthUrl = URL(string: oauthUrlString) {
+                    handleOAuthUrl(oauthUrl)
+                }
             }
             break
         default:
@@ -191,11 +243,35 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     }
     
     private func handleOAuthUrl(_ oauthUrl: URL) {
+        // Skip non-HTTPS URLs
         if (!oauthUrl.absoluteString.hasPrefix("https://")) {
             print("handleOAuthUrl - Skipping non https url - \(oauthUrl)")
             return
         }
-        UIApplication.shared.open(oauthUrl)
+        
+        // Normalize URL to handle potential double-encoding
+        let normalizedUrlString = URLUtils.normalizeUrlEncoding(oauthUrl.absoluteString)
+        
+        #if canImport(UIKit) && os(iOS)
+        if let normalizedUrl = URL(string: normalizedUrlString) {
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(normalizedUrl)
+            } else {
+                UIApplication.shared.openURL(normalizedUrl)
+            }
+        } else {
+            // Fallback to original URL if normalization creates an invalid URL
+            print("Normalization created invalid URL, using original")
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(oauthUrl)
+            } else {
+                UIApplication.shared.openURL(oauthUrl)
+            }
+        }
+        #else
+        // For non-iOS platforms (used only during testing)
+        print("[TEST MODE] Would open URL: \(normalizedUrlString)")
+        #endif
     }
     
     private func isQuilttEvent(_ url: URL) -> Bool {
