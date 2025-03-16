@@ -9,44 +9,50 @@ public class QuilttConnector {
     private var token: String?
     private var connectorId: String?
     private var connectionId: String?
-    
+
     public init() {
         webview = QuilttConnectorWebview.init()
     }
-    
+
     public func authenticate(token: String) {
         self.token = token
     }
-    
-    public func connect(config: QuilttConnectorConnectConfiguration,
-                        onEvent: ConnectorSDKOnEventCallback? = nil,
-                        onExit: ConnectorSDKOnEventExitCallback? = nil,
-                        onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
-                        onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
-                        onExitError: ConnectorSDKOnExitErrorCallback? = nil) -> WKWebView {
-        webview!.load(token: self.token,
-                      config: config,
-                      onEvent: onEvent,
-                      onExit: onExit,
-                      onExitSuccess: onExitSuccess,
-                      onExitAbort: onExitAbort,
-                      onExitError: onExitError)
+
+    public func connect(
+        config: QuilttConnectorConnectConfiguration,
+        onEvent: ConnectorSDKOnEventCallback? = nil,
+        onExit: ConnectorSDKOnEventExitCallback? = nil,
+        onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
+        onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
+        onExitError: ConnectorSDKOnExitErrorCallback? = nil
+    ) -> WKWebView {
+        webview!.load(
+            token: self.token,
+            config: config,
+            onEvent: onEvent,
+            onExit: onExit,
+            onExitSuccess: onExitSuccess,
+            onExitAbort: onExitAbort,
+            onExitError: onExitError)
         return webview!
     }
-    
-    public func reconnect(config: QuilttConnectorReconnectConfiguration,
-                          onEvent: ConnectorSDKOnEventCallback? = nil,
-                          onExit: ConnectorSDKOnEventExitCallback? = nil,
-                          onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
-                          onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
-                          onExitError: ConnectorSDKOnExitErrorCallback? = nil) -> WKWebView {
-        webview!.load(token: self.token,
-                      config: config,
-                      onEvent: onEvent,
-                      onExit: onExit,
-                      onExitSuccess: onExitSuccess,
-                      onExitAbort: onExitAbort,
-                      onExitError: onExitError)
+
+    public func reconnect(
+        config: QuilttConnectorReconnectConfiguration,
+        onEvent: ConnectorSDKOnEventCallback? = nil,
+        onExit: ConnectorSDKOnEventExitCallback? = nil,
+        onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
+        onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
+        onExitError: ConnectorSDKOnExitErrorCallback? = nil
+    ) -> WKWebView {
+        webview!.load(
+            token: self.token,
+            config: config,
+            onEvent: onEvent,
+            onExit: onExit,
+            onExitSuccess: onExitSuccess,
+            onExitAbort: onExitAbort,
+            onExitError: onExitError)
         return webview!
     }
 }

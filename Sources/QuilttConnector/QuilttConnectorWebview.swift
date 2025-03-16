@@ -1,12 +1,11 @@
 // swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
-@preconcurrency
-import Foundation
-import WebKit
+@preconcurrency import Foundation
+@preconcurrency import WebKit
 
 #if canImport(UIKit)
-import UIKit
+    import UIKit
 #endif
 
 class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
@@ -21,25 +20,25 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     public init() {
         let webConfiguration = WKWebViewConfiguration()
         super.init(frame: .zero, configuration: webConfiguration)
-        
+
         // Configure JavaScript based on iOS version
         if #available(iOS 14.0, macOS 11.0, *) {
             self.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         } else {
             self.configuration.preferences.javaScriptEnabled = true
         }
-        
+
         // Skip scrollView setup during testing/macOS
         #if os(iOS)
-        // Explicitly access WKWebView's scrollView property
-        (self as WKWebView).scrollView.isScrollEnabled = true
-        self.isMultipleTouchEnabled = false
+            // Explicitly access WKWebView's scrollView property
+            (self as WKWebView).scrollView.isScrollEnabled = true
+            self.isMultipleTouchEnabled = false
         #endif
         /** Enable isInspectable to debug webview */
         //  if #available(iOS 16.4, *) {
         //  self.isInspectable = true
         //  }
-        self.navigationDelegate = self // to manage navigation behavior for the webview.
+        self.navigationDelegate = self  // to manage navigation behavior for the webview.
     }
 
     required init?(coder: NSCoder) {
@@ -47,13 +46,15 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     }
 
     @discardableResult
-    public func load(token: String? = nil,
-                     config: QuilttConnectorConfiguration,
-                     onEvent: ConnectorSDKOnEventCallback? = nil,
-                     onExit: ConnectorSDKOnEventExitCallback? = nil,
-                     onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
-                     onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
-                     onExitError: ConnectorSDKOnExitErrorCallback? = nil) -> WKNavigation? {
+    public func load(
+        token: String? = nil,
+        config: QuilttConnectorConfiguration,
+        onEvent: ConnectorSDKOnEventCallback? = nil,
+        onExit: ConnectorSDKOnEventExitCallback? = nil,
+        onExitSuccess: ConnectorSDKOnExitSuccessCallback? = nil,
+        onExitAbort: ConnectorSDKOnExitAbortCallback? = nil,
+        onExitError: ConnectorSDKOnExitErrorCallback? = nil
+    ) -> WKNavigation? {
         self.token = token
         self.config = config
         self.onEvent = onEvent
@@ -61,21 +62,21 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         self.onExitSuccess = onExitSuccess
         self.onExitAbort = onExitAbort
         self.onExitError = onExitError
-        
+
         // Apply smart URL encoding to the redirect URL
         let safeOAuthRedirectUrl = URLUtils.smartEncodeURIComponent(config.oauthRedirectUrl)
-        
+
         // Build the URL components
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "\(config.connectorId).quiltt.app"
-        
+
         // Create query items
         var queryItems = [
             URLQueryItem(name: "mode", value: "webview"),
-            URLQueryItem(name: "agent", value: "ios-\(quilttSdkVersion)")
+            URLQueryItem(name: "agent", value: "ios-\(quilttSdkVersion)"),
         ]
-        
+
         // Handle the OAuth redirect URL with special care
         if URLUtils.isEncoded(safeOAuthRedirectUrl) {
             // If already encoded, decode once to prevent double encoding
@@ -84,9 +85,9 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         } else {
             queryItems.append(URLQueryItem(name: "oauth_redirect_url", value: safeOAuthRedirectUrl))
         }
-        
+
         urlComponents.queryItems = queryItems
-        
+
         if let url = urlComponents.url {
             let req = URLRequest(url: url)
             return super.load(req)
@@ -100,9 +101,11 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
 
      https://developer.apple.com/documentation/webkit/wknavigationdelegate/1455641-webview
      */
-    public func webView(_ webView: WKWebView,
-                        decidePolicyFor navigationAction: WKNavigationAction,
-                        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    public func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
         if let url = navigationAction.request.url {
             // Intercept the URL here
             print("Intercepted URL: \(url)")
@@ -125,48 +128,50 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     }
 
     // TODO: FIXME, not sure how this func can fit into here
-    public func authenticate(_ token: String) -> Void {
+    public func authenticate(_ token: String) {
         self.token = token
         self.initInjectJavaScript()
     }
 
-    private func initInjectJavaScript() -> Void {
+    private func initInjectJavaScript() {
         let tokenString = token ?? "null"
 
         let connectorId = config!.connectorId
         let connectionId = config?.connectionId ?? "null"
         let institution = config?.institution ?? "null"
         let script = """
-            const options = {
-              source: 'quiltt',
-              type: 'Options',
-              token: '\(tokenString)',
-              connectorId: '\(connectorId)',
-              connectionId: '\(connectionId)',
-              institution: '\(institution)',
-            };
-            const compactedOptions = Object.keys(options).reduce((acc, key) => {
-              if (options[key] !== 'null') {
-                acc[key] = options[key];
-              }
-              return acc;
-            }, {});
-            window.postMessage(compactedOptions);
-        """
+                const options = {
+                  source: 'quiltt',
+                  type: 'Options',
+                  token: '\(tokenString)',
+                  connectorId: '\(connectorId)',
+                  connectionId: '\(connectionId)',
+                  institution: '\(institution)',
+                };
+                const compactedOptions = Object.keys(options).reduce((acc, key) => {
+                  if (options[key] !== 'null') {
+                    acc[key] = options[key];
+                  }
+                  return acc;
+                }, {});
+                window.postMessage(compactedOptions);
+            """
         self.evaluateJavaScript(script)
     }
-    
-    private func clearLocalStorage() -> Void {
+
+    private func clearLocalStorage() {
         let script = "localStorage.clear()"
         self.evaluateJavaScript(script)
     }
 
-    private func handleQuilttEvent(_ url: URL) -> Void {
+    private func handleQuilttEvent(_ url: URL) {
         let urlComponents = URLComponents(string: url.absoluteString)
         let connectorId = config?.connectorId
-        let profileId = urlComponents?.queryItems?.first(where: { $0.name == "profileId"})?.value
-        let connectionId = urlComponents?.queryItems?.first(where: { $0.name == "connectionId"})?.value
-        let metaData = ConnectorSDKCallbackMetadata(connectorId: connectorId!, profileId: profileId, connectionId: connectionId)
+        let profileId = urlComponents?.queryItems?.first(where: { $0.name == "profileId" })?.value
+        let connectionId = urlComponents?.queryItems?.first(where: { $0.name == "connectionId" })?
+            .value
+        let metaData = ConnectorSDKCallbackMetadata(
+            connectorId: connectorId!, profileId: profileId, connectionId: connectionId)
         print("handleQuilttEvent \(url)")
         switch url.host {
         case "Load":
@@ -197,9 +202,10 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             break
         case "OauthRequested":
             if let urlc = URLComponents(string: url.absoluteString),
-               let oauthUrlItem = urlc.queryItems?.first(where: { $0.name == "oauthUrl" }),
-               let oauthUrlString = oauthUrlItem.value {
-                
+                let oauthUrlItem = urlc.queryItems?.first(where: { $0.name == "oauthUrl" }),
+                let oauthUrlString = oauthUrlItem.value
+            {
+
                 // Handle potential encoding issues
                 if URLUtils.isEncoded(oauthUrlString) {
                     let decodedUrl = oauthUrlString.removingPercentEncoding ?? oauthUrlString
@@ -221,7 +227,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             print("unhandled event \(url.absoluteString)")
         }
     }
-    
+
     // TODO: Need to regroup on this and figure out how to handle this better
     // private var urlAllowList = [
     //     "quiltt.app",
@@ -229,7 +235,7 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
     //     "moneydesktop.com",
     //     "cdn.plaid.com",
     // ]
-    
+
     private func shouldRender(_ url: URL) -> Bool {
         if isQuilttEvent(url) {
             return false
@@ -241,39 +247,39 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
         // }
         return true
     }
-    
+
     private func handleOAuthUrl(_ oauthUrl: URL) {
         // Skip non-HTTPS URLs
-        if (!oauthUrl.absoluteString.hasPrefix("https://")) {
+        if !oauthUrl.absoluteString.hasPrefix("https://") {
             print("handleOAuthUrl - Skipping non https url - \(oauthUrl)")
             return
         }
-        
+
         // Normalize URL to handle potential double-encoding
         let normalizedUrlString = URLUtils.normalizeUrlEncoding(oauthUrl.absoluteString)
-        
+
         #if canImport(UIKit) && os(iOS)
-        if let normalizedUrl = URL(string: normalizedUrlString) {
-            if #available(iOS 10.0, *) {
-                UIApplication.shared.open(normalizedUrl)
+            if let normalizedUrl = URL(string: normalizedUrlString) {
+                if #available(iOS 10.0, *) {
+                    UIApplication.shared.open(normalizedUrl)
+                } else {
+                    UIApplication.shared.openURL(normalizedUrl)
+                }
             } else {
-                UIApplication.shared.openURL(normalizedUrl)
+                // Fallback to original URL if normalization creates an invalid URL
+                print("Normalization created invalid URL, using original")
+                if #available(iOS 10.0, *) {
+                    UIApplication.shared.open(oauthUrl)
+                } else {
+                    UIApplication.shared.openURL(oauthUrl)
+                }
             }
-        } else {
-            // Fallback to original URL if normalization creates an invalid URL
-            print("Normalization created invalid URL, using original")
-            if #available(iOS 10.0, *) {
-                UIApplication.shared.open(oauthUrl)
-            } else {
-                UIApplication.shared.openURL(oauthUrl)
-            }
-        }
         #else
-        // For non-iOS platforms (used only during testing)
-        print("[TEST MODE] Would open URL: \(normalizedUrlString)")
+            // For non-iOS platforms (used only during testing)
+            print("[TEST MODE] Would open URL: \(normalizedUrlString)")
         #endif
     }
-    
+
     private func isQuilttEvent(_ url: URL) -> Bool {
         return url.absoluteString.hasPrefix("quilttconnector://")
     }

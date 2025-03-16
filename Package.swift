@@ -7,13 +7,17 @@ let package = Package(
     name: "QuilttConnector",
     platforms: [
         .iOS(.v13),
-        .macOS(.v10_15) // Added for testing only
+        .macOS(.v10_15),  // Added for testing only
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "QuilttConnector",
-            targets: ["QuilttConnector"]),
+            targets: ["QuilttConnector"])
+    ],
+    dependencies: [
+        // Dev deps
+        .package(url: "https://github.com/apple/swift-format.git", branch: ("release/5.9"))
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.

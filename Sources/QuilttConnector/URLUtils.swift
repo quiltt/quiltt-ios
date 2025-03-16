@@ -10,14 +10,15 @@ class URLUtils {
     static func isEncoded(_ string: String) -> Bool {
         // Check for typical URL encoding patterns like %20, %3A, etc.
         let hasEncodedChars = string.range(of: "%[0-9A-F]{2}", options: .regularExpression) != nil
-        
+
         // Check if double encoding has occurred (e.g., %253A instead of %3A)
-        let hasDoubleEncoding = string.range(of: "%25[0-9A-F]{2}", options: .regularExpression) != nil
-        
+        let hasDoubleEncoding =
+            string.range(of: "%25[0-9A-F]{2}", options: .regularExpression) != nil
+
         // If we have encoded chars but no double encoding, it's likely properly encoded
         return hasEncodedChars && !hasDoubleEncoding
     }
-    
+
     /**
      Smart URL encoder that ensures a string is encoded exactly once
      - Parameter string: The string to encode
@@ -25,21 +26,22 @@ class URLUtils {
      */
     static func smartEncodeURIComponent(_ string: String) -> String {
         if string.isEmpty { return string }
-        
+
         // If it's already encoded, return as is
         if isEncoded(string) {
             print("URL already encoded, skipping encoding: \(string)")
             return string
         }
-        
+
         // Otherwise, encode it
-        guard let encoded = string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        guard let encoded = string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             return string
         }
         print("URL encoded from: \(string) to: \(encoded)")
         return encoded
     }
-    
+
     /**
      Checks if a string appears to be double-encoded
      - Parameter string: The string to check
@@ -49,7 +51,7 @@ class URLUtils {
         if string.isEmpty { return false }
         return string.range(of: "%25[0-9A-F]{2}", options: .regularExpression) != nil
     }
-    
+
     /**
      Normalizes a URL string by decoding it once if it appears to be double-encoded
      - Parameter urlString: The URL string to normalize

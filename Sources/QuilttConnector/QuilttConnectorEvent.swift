@@ -1,14 +1,16 @@
 import Foundation
 
-
 public struct ConnectorSDKCallbackMetadata {
     public let connectorId: String
     public let profileId: String?
     public let connectionId: String?
 }
 
-public typealias ConnectorSDKOnEventCallback = (ConnectorSDKEventType, ConnectorSDKCallbackMetadata) -> Void
-public typealias ConnectorSDKOnEventExitCallback = (ConnectorSDKEventType, ConnectorSDKCallbackMetadata) -> Void
+public typealias ConnectorSDKOnEventCallback = (ConnectorSDKEventType, ConnectorSDKCallbackMetadata)
+    -> Void
+public typealias ConnectorSDKOnEventExitCallback = (
+    ConnectorSDKEventType, ConnectorSDKCallbackMetadata
+) -> Void
 
 public typealias ConnectorSDKOnExitSuccessCallback = (ConnectorSDKCallbackMetadata) -> Void
 public typealias ConnectorSDKOnExitAbortCallback = (ConnectorSDKCallbackMetadata) -> Void

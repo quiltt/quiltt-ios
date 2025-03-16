@@ -10,7 +10,7 @@ public protocol QuilttConnectorConfiguration {
     var institution: String? { get }
 }
 
-public struct QuilttConnectorConnectConfiguration : QuilttConnectorConfiguration {
+public struct QuilttConnectorConnectConfiguration: QuilttConnectorConfiguration {
     public var connectorId: String
     public var oauthRedirectUrl: String
     public var connectionId: String?
@@ -19,7 +19,7 @@ public struct QuilttConnectorConnectConfiguration : QuilttConnectorConfiguration
         connectorId: String,
         oauthRedirectUrl: String,
         institution: String? = nil
-    ){
+    ) {
         self.connectorId = connectorId
         self.oauthRedirectUrl = oauthRedirectUrl
         self.institution = institution
@@ -31,15 +31,14 @@ public struct QuilttConnectorReconnectConfiguration: QuilttConnectorConfiguratio
     public var oauthRedirectUrl: String
     public var connectionId: String?
     public var institution: String?
-    
+
     public init(
         connectorId: String,
         oauthRedirectUrl: String,
         connectionId: String
-    ){
+    ) {
         self.connectorId = connectorId
         self.oauthRedirectUrl = oauthRedirectUrl
         self.connectionId = connectionId
     }
 }
-
