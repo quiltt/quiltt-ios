@@ -200,27 +200,28 @@ class QuilttConnectorWebview: WKWebView, WKNavigationDelegate {
             // Not used in mobile but leaving breadcrumb here.
             print("Authenticate \(String(describing: profileId))")
             break
-        case "OauthRequested":
+        case "Navigate":
             if let urlc = URLComponents(string: url.absoluteString),
-                let oauthUrlItem = urlc.queryItems?.first(where: { $0.name == "oauthUrl" }),
-                let oauthUrlString = oauthUrlItem.value
+                let navigateUrlItem = urlc.queryItems?.first(where: { $0.name == "url" }),
+                let navigateUrlString = navigateUrlItem.value
             {
-
                 // Handle potential encoding issues
-                if URLUtils.isEncoded(oauthUrlString) {
-                    let decodedUrl = oauthUrlString.removingPercentEncoding ?? oauthUrlString
-                    if let oauthUrl = URL(string: decodedUrl) {
-                        handleOAuthUrl(oauthUrl)
+                if URLUtils.isEncoded(navigateUrlString) {
+                    let decodedUrl = navigateUrlString.removingPercentEncoding ?? navigateUrlString
+                    if let navigateUrl = URL(string: decodedUrl) {
+                        handleOAuthUrl(navigateUrl)
                     } else {
                         print("Failed to create URL from decoded string: \(decodedUrl)")
                         // Fallback to original string
-                        if let oauthUrl = URL(string: oauthUrlString) {
-                            handleOAuthUrl(oauthUrl)
+                        if let navigateUrl = URL(string: navigateUrlString) {
+                            handleOAuthUrl(navigateUrl)
                         }
                     }
-                } else if let oauthUrl = URL(string: oauthUrlString) {
-                    handleOAuthUrl(oauthUrl)
+                } else if let navigateUrl = URL(string: navigateUrlString) {
+                    handleOAuthUrl(navigateUrl)
                 }
+            } else {
+                print("Navigate URL missing from request")
             }
             break
         default:
