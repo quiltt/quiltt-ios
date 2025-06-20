@@ -12,11 +12,13 @@ class URLUtils {
         let hasEncodedChars = string.range(of: "%[0-9A-F]{2}", options: .regularExpression) != nil
 
         // Check if double encoding has occurred (e.g., %253A instead of %3A)
-        let hasDoubleEncoding =
-            string.range(of: "%25[0-9A-F]{2}", options: .regularExpression) != nil
+        // let hasDoubleEncoding =
+        //     string.range(of: "%25[0-9A-F]{2}", options: .regularExpression) != nil
 
         // If we have encoded chars but no double encoding, it's likely properly encoded
-        return hasEncodedChars && !hasDoubleEncoding
+        return hasEncodedChars
+        // && !hasDoubleEncoding
+        // TODO: Decide what to do with double encoding
     }
 
     /**
