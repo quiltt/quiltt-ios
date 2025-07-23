@@ -1,5 +1,10 @@
 name: Automated Release and Publish
 
+permissions:
+  contents: read
+  pull-requests: write
+  packages: write
+
 on:
   pull_request:
     types: [closed]
