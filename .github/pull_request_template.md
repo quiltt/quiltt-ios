@@ -32,18 +32,9 @@ Feature Description...
 
 ## Testing & Compatibility
 
-- [ ] Tested on iOS (specify versions: ___)
+- [ ] Tested on iOS
 - [ ] Tested Universal Link flows (if applicable)
 - [ ] Example app verified
-- [ ] Tested on physical devices (when possible)
-- [ ] Memory leak testing completed
-- [ ] Accessibility features verified
-
-## Platform Support
-
-- [ ] iOS 14.0+ compatibility maintained
-- [ ] Swift 5.9+ compatibility maintained
-- [ ] No breaking changes to public API (unless major release)
 
 ## Release Checklist
 
@@ -53,16 +44,8 @@ Feature Description...
 - [ ] **Are relevant documentation changes queued up?**
   - Are the Quiltt API Docs updated?
   - Is the iOS SDK README updated (if needed)?
-  - Are Swift documentation comments added for public APIs?
+  - Are code comments added for complex logic?
 - [ ] **Version considerations**
   - Should this be a patch, minor, or major version bump?
   - Are any breaking changes clearly documented?
   - **Add appropriate release label** (`release:patch`, `release:minor`, `release:major`) before merging
-
-## Code Quality
-
-- [ ] Code follows Swift API Design Guidelines
-- [ ] Public APIs have proper documentation comments
-- [ ] Error handling is implemented appropriately
-- [ ] Memory management is handled correctly (no retain cycles)
-- [ ] Swift Package builds without warnings
