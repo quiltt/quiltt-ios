@@ -48,50 +48,57 @@ def find_suitable_simulator
     simulator_json = `xcrun simctl list devices available -j`
     simulators = JSON.parse(simulator_json)
 
-    # Look for runtime versions (priority order)
-    runtime_priorities = ['iOS-18-2', 'iOS-18-1', 'iOS-17-5', 'iOS-17-4']
+    # Priority order for device models (CI-friendly devices first)
+    device_priorities = ['iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13']
 
-    # Priority order for device models
-    device_priorities = ['iPhone 16 Pro', 'iPhone 15 Pro', 'iPhone 16', 'iPhone 15']
+    # Look through all available iOS runtimes (latest first)
+    ios_runtimes = simulators['devices'].keys
+                              .select { |k| k.include?('iOS') }
+                              .sort_by { |k| k.split('-').last.to_i }
+                              .reverse
 
-    # Find the best available simulator
-    runtime_priorities.each do |runtime|
-      if simulators['devices'].key?(runtime)
-        devices = simulators['devices'][runtime]
+    puts "Available iOS runtimes: #{ios_runtimes}"
 
-        # Try to find preferred device models in priority order
-        device_priorities.each do |device_name|
-          device = devices.find { |d| d['name'].include?(device_name) && d['isAvailable'] }
-          return device if device
-        end
+    ios_runtimes.each do |runtime_name|
+      devices = simulators['devices'][runtime_name]
+      next if devices.empty?
 
-        # If no priority device found, use the first available one
-        first_available = devices.find { |d| d['isAvailable'] }
-        return first_available if first_available
-      end
-    end
+      puts "Checking runtime: #{runtime_name}"
 
-    # Fallback approach - look through all devices without runtime priority
-    simulators['devices'].each do |_runtime, devices|
+      # Try to find preferred device models in priority order
       device_priorities.each do |device_name|
-        device = devices.find { |d| d['name'].include?(device_name) && d['isAvailable'] }
-        return device if device
+        device = devices.find { |d| d['name'] == device_name && d['isAvailable'] }
+        if device
+          puts "Found preferred device: #{device['name']} (#{device['udid']}) on #{runtime_name}"
+          return device
+        end
+      end
+
+      # If no priority device found, use the first available iPhone
+      first_available = devices.find { |d| d['name'].include?('iPhone') && d['isAvailable'] }
+      if first_available
+        puts "Found first available iPhone: #{first_available['name']} (#{first_available['udid']}) on #{runtime_name}"
+        return first_available
       end
     end
 
-    # If still nothing found, use any available iOS simulator
-    simulators['devices'].each do |runtime_name, devices|
-      if runtime_name.include?('iOS')
-        first_available = devices.find { |d| d['isAvailable'] }
-        return first_available if first_available
-      end
-    end
-
-    # Ultimate fallback
+    puts "No suitable simulator found"
     return nil
   rescue => e
     UI.error("Error finding simulator: #{e.message}")
     return nil
+  end
+end
+
+# Get the latest available iOS SDK version
+def get_latest_ios_sdk
+  begin
+    sdk_output = `xcodebuild -showsdks | grep iphonesimulator`
+    # Extract version from output like "Simulator - iOS 18.5            -sdk iphonesimulator18.5"
+    match = sdk_output.match(/iphonesimulator(\d+\.\d+)/)
+    return match ? match[1] : "18.0"
+  rescue
+    return "18.0" # Fallback
   end
 end
 
@@ -146,30 +153,159 @@ platform :ios do
   desc 'Build Example App'
   lane :build_example_app do
     Dir.chdir('..') do
-      # For CI, we want to build for simulator to avoid code signing issues
+      success = false
+      latest_sdk = get_latest_ios_sdk
+      puts "Using iOS SDK version: #{latest_sdk}"
+
       if ENV['CI']
-        # First attempt with a known simulator that should work on recent versions
-        success = system('xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace -scheme ExampleSwiftUI -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2" build')
-
-        # If that fails, try to find a suitable simulator dynamically
-        if !success
-          puts "First build attempt failed, trying to find suitable simulator..."
-          simulator = find_suitable_simulator
-
-          if simulator
-            puts "Found simulator: #{simulator['name']} with udid: #{simulator['udid']}"
-            success = system("xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace -scheme ExampleSwiftUI -sdk iphonesimulator -destination 'platform=iOS Simulator,id=#{simulator['udid']}' build")
-          else
-            # Last resort - try with generic device
-            puts "No suitable simulator found, trying with generic device..."
-            success = system('xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace -scheme ExampleSwiftUI -sdk iphonesimulator -destination "platform=iOS Simulator,id=dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder" build')
-          end
-        end
+        puts "🤖 Building for CI environment..."
+        success = build_for_ci(latest_sdk)
       else
-        success = system('xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace -allowProvisioningUpdates -scheme ExampleSwiftUI -sdk iphoneos build')
+        puts "🏠 Building for local environment..."
+        success = build_for_local(latest_sdk)
       end
-      raise 'Build failed' unless success
+
+      raise 'Build failed - all attempts exhausted' unless success
     end
+  end
+
+  def build_for_ci(sdk_version)
+    # CI environment - prioritize reliability over specific configurations
+    puts "CI Strategy: Simulator build with minimal dependencies"
+
+    # Strategy 1: Try with dynamic simulator detection
+    simulator = find_suitable_simulator
+    if simulator && try_simulator_build(simulator, sdk_version)
+      puts "✅ CI build succeeded with dynamic simulator"
+      return true
+    end
+
+    # Strategy 2: Try with common CI simulator names
+    ci_devices = ['iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro', 'iPhone 14']
+    ci_devices.each do |device_name|
+      if try_named_simulator_build(device_name, sdk_version)
+        puts "✅ CI build succeeded with #{device_name}"
+        return true
+      end
+    end
+
+    # Strategy 3: Generic simulator build (most reliable for CI)
+    if try_generic_simulator_build(sdk_version)
+      puts "✅ CI build succeeded with generic simulator"
+      return true
+    end
+
+    # Strategy 4: Build-only mode (no destination specified)
+    if try_build_only_mode(sdk_version)
+      puts "✅ CI build succeeded in build-only mode"
+      return true
+    end
+
+    puts "❌ All CI build strategies failed"
+    return false
+  end
+
+  def build_for_local(sdk_version)
+    # Local environment - try more configurations including device builds
+    puts "Local Strategy: Try simulators first, then device if available"
+
+    # Strategy 1: Try with dynamic simulator detection
+    simulator = find_suitable_simulator
+    if simulator && try_simulator_build(simulator, sdk_version)
+      puts "✅ Local build succeeded with dynamic simulator"
+      return true
+    end
+
+    # Strategy 2: Try with specific simulator names
+    local_devices = ['iPhone 16 Pro', 'iPhone 15 Pro', 'iPhone 16', 'iPhone 15']
+    local_devices.each do |device_name|
+      if try_named_simulator_build(device_name, sdk_version)
+        puts "✅ Local build succeeded with #{device_name}"
+        return true
+      end
+    end
+
+    # Strategy 3: Try device build (only for local)
+    if try_device_build(sdk_version)
+      puts "✅ Local build succeeded with device"
+      return true
+    end
+
+    # Strategy 4: Generic simulator build
+    if try_generic_simulator_build(sdk_version)
+      puts "✅ Local build succeeded with generic simulator"
+      return true
+    end
+
+    puts "❌ All local build strategies failed"
+    return false
+  end
+
+  def try_simulator_build(simulator, sdk_version)
+    puts "Trying build with simulator: #{simulator['name']} (#{simulator['udid']})"
+
+    cmd = build_command(
+      sdk: 'iphonesimulator',
+      destination: "platform=iOS Simulator,id=#{simulator['udid']}",
+      extra_flags: "IPHONEOS_DEPLOYMENT_TARGET=14.0"
+    )
+
+    system(cmd)
+  end
+
+  def try_named_simulator_build(device_name, sdk_version)
+    puts "Trying build with named simulator: #{device_name}"
+
+    cmd = build_command(
+      sdk: 'iphonesimulator',
+      destination: "platform=iOS Simulator,name=#{device_name}",
+      extra_flags: "IPHONEOS_DEPLOYMENT_TARGET=14.0"
+    )
+
+    system(cmd)
+  end
+
+  def try_generic_simulator_build(sdk_version)
+    puts "Trying generic simulator build"
+
+    cmd = build_command(
+      sdk: 'iphonesimulator',
+      destination: "platform=iOS Simulator",
+      extra_flags: "IPHONEOS_DEPLOYMENT_TARGET=14.0 CODE_SIGNING_ALLOWED=NO"
+    )
+
+    system(cmd)
+  end
+
+  def try_device_build(sdk_version)
+    puts "Trying device build"
+
+    cmd = build_command(
+      sdk: 'iphoneos',
+      destination: "generic/platform=iOS",
+      extra_flags: "IPHONEOS_DEPLOYMENT_TARGET=14.0 -allowProvisioningUpdates"
+    )
+
+    system(cmd)
+  end
+
+  def try_build_only_mode(sdk_version)
+    puts "Trying build-only mode (no destination)"
+
+    cmd = "xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace -scheme ExampleSwiftUI -sdk iphonesimulator build IPHONEOS_DEPLOYMENT_TARGET=14.0 CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES"
+
+    system(cmd)
+  end
+
+  def build_command(sdk:, destination: nil, extra_flags: "")
+    base_cmd = "xcodebuild -workspace ExampleSwiftUI/ExampleSwiftUI.xcodeproj/project.xcworkspace -scheme ExampleSwiftUI -sdk #{sdk}"
+
+    if destination
+      base_cmd += " -destination \"#{destination}\""
+    end
+
+    base_cmd += " build #{extra_flags}"
+    base_cmd
   end
 
   def generate_release_version_file(version)
